@@ -1,7 +1,10 @@
 # TODO: FIX SOME BUGS WITH FLAGS
 
 import random
+import itertools
 import fire
+import os
+import subprocess
 from sys import stderr, stdout
 from typing import List, Union, Any, Set
 
@@ -12,6 +15,15 @@ def _write(obj: Union[int, str]):
 
 def endl() -> None:
     _write("\n")
+
+
+def animate(done: bool, filename: str) -> None:
+    for c in itertools.cycle(['|', '/', '-', '\\']):
+        if done:
+            break
+        stdout.write(f'\rCompiling {filename} {c}')
+        stdout.flush()
+    stdout.write('\rDone!     ')
 
 
 def printSin(cases: int, lst: Union[List[int], List[str]],
@@ -55,7 +67,7 @@ def printList(cases: int, lst: List[Any], printLen: bool) -> None:
 
 
 class Helper:
-    '''Helper class to generate.'''
+    '''Helper class.'''
     def _randomInt(self, low: int, high: int) -> int:
         return random.randint(low, high)
 
@@ -162,22 +174,11 @@ class Helper:
 helper = Helper()
 
 
-class Generator:
-    '''Class that generates random test cases.'''
-    def __init__(self, low: int = 1, high: int = 10):
-        '''
-         Parameters
-        -----------
-            low: int, optional
-                Lowest limit of the numbers that are generated randomly.
-            high: int, optional
-                Lowest limit of the numbers that are generated randomly.
-        '''
-        self.low = low
-        self.high = high
-
+class Tester:
+    '''Main testing class.'''
     def generate(self,
-                 cases: int = 10,
+                 low: int = 1,
+                 high: int = 10,
                  integers: bool = False,
                  strings: bool = False,
                  loi: bool = False,
@@ -193,8 +194,10 @@ class Generator:
 
          Parameters
         -----------
-            cases: int, optional
-                Number of testcases to be generated.
+            low: int, optional
+                Lowest limit of the numbers that are generated randomly.
+            high: int, optional
+                Lowest limit of the numbers that are generated randomly.
             integers: bool, optional
                 Outputs randomly generated integers when this flag is passed.
             strings: bool, optional
@@ -216,29 +219,208 @@ class Generator:
             printLen: bool, optional
                 Outputs the length of the object along with the testcases, when this flag is passed.
         '''
+        cases = 1
         if integers is True:
             if unique is True:
-                lst = helper._uniqueIntegers(cases, self.low, self.high)
+                lst = helper._uniqueIntegers(cases, low, high)
                 printSin(cases, lst, printLen)
             else:
-                lst = helper._integers(cases, self.low, self.high)
+                lst = helper._integers(cases, low, high)
                 printSin(cases, lst, printLen)
         elif strings is True:
-            lst = helper._strings(cases, self.low, self.high, upper, lower,
-                                  mixed, binary)
-            printSin(cases, lst, printLen)
+            lst = helper._strings(cases, low, high, upper, lower, mixed,
+                                  binary)
+            if len(lst[0]) == 0:
+                stderr.write('''
+ERROR: No string arguments passed.
+
+Please use any of the following flags while using string generation:
+--uppper
+--lower
+--mixed
+--binary
+
+For more information use python3 gen.py generate --help command.
+''')
+            else:
+                printSin(cases, lst, printLen)
         elif loi is True:
             if unique is True:
-                lst = helper._listOfUniqueIntegers(cases, self.low, self.high)
+                lst = helper._listOfUniqueIntegers(cases, low, high)
                 printList(cases, lst, printLen)
             else:
-                lst = helper._listOfIntegers(cases, self.low, self.high)
+                lst = helper._listOfIntegers(cases, low, high)
                 printList(cases, lst, printLen)
         elif los is True:
-            lst = helper._listOfStrings(cases, self.low, self.high, upper,
-                                        lower, mixed, binary)
-            printList(cases, lst, printLen)
+            lst = helper._listOfStrings(cases, low, high, upper, lower, mixed,
+                                        binary)
+            if len(lst[0]) == 0:
+                stderr.write(f'''
+ERROR: No string arguments passed.
+
+Please use any of the following flags while using string generation:
+--uppper
+--lower
+--mixed
+--binary
+
+For more information use python3 {os.path.basename(__name__)} generate --help command.
+''')
+            else:
+                printList(cases, lst, printLen)
+
+    def test(self,
+             cases: int = 10,
+             low: int = 1,
+             high: int = 10,
+             integers: bool = False,
+             strings: bool = False,
+             loi: bool = False,
+             los: bool = False,
+             upper: bool = False,
+             lower: bool = False,
+             mixed: bool = False,
+             binary: bool = False,
+             unique: bool = False,
+             printLen: bool = True,
+             brute: str = 'brute.cpp',
+             soln: str = 'main.cpp',
+             genOutput: str = 'stressInput') -> None:
+
+        args: List[str] = [
+            f'--low={low}', f'--high={high}', f'--integers={integers}',
+            f'--strings={strings}', f'--loi={loi}', f'--los={los}',
+            f'--upper={upper}', f'--lower={lower}', f'--mixed={mixed}',
+            f'--binary={binary}', f'--unique={unique}',
+            f'--printLen={printLen}'
+        ]
+
+        if integers is False and strings is False and loi is False and los is False:
+            stderr.write(f'''
+ERROR: No flags/arguments passed.
+
+For help, please use python3 {os.path.basename(__file__)} test --help command.
+''')
+
+        if strings is True or los is True:
+            if upper is False and mixed is False and lower is False and binary is False:
+                stderr.write(f'''
+ERROR: No string arguments passed.
+
+Please use any of the following flags while using string generation:
+--uppper
+--lower
+--mixed
+--binary
+
+For more information use python3 {os.path.basename(__name__)} generate --help command.
+''')
+
+        cmd: List[str] = [
+            'python3', f'{os.path.basename(__file__)}', 'generate'
+        ]
+        cmd.extend(args)
+
+        if not os.path.exists(brute) or not os.path.isfile(brute):
+            _write(f'Could not find {brute}')
+            return
+
+        if not os.path.exists(soln) or not os.path.isfile(soln):
+            _write(f'Could not find {soln}')
+            return
+
+        _write(f'Compilng {brute}...')
+        endl()
+        subprocess.run(
+            ['g++', '--std=c++17', brute, '-o',
+             brute.split('.')[0]],
+            cwd=os.getcwd())
+        _write(f'Done compiling {brute}')
+        endl()
+        _write(f'Compilng {soln}...')
+        endl()
+        subprocess.run(['g++', '--std=c++17', soln, '-o',
+                        soln.split('.')[0]],
+                       cwd=os.getcwd())
+        _write(f'Done compiling {soln}')
+        endl()
+
+        _write('Starting testing...')
+        endl()
+        _write('Use CTRL + C to stop the testing anytime.')
+        endl()
+
+        n: int = 1
+        bruteOutput = 'bruteOutput'
+        solnOutput = 'mainOutput'
+
+        while True:
+            try:
+                f = open(genOutput, 'w')
+                subprocess.run(args=cmd, cwd=os.getcwd(), stdout=f)
+                f.close()
+
+                bo = open(bruteOutput, 'w')
+                go = open(genOutput, 'r')
+                subprocess.run(['./brute'],
+                               stdin=go,
+                               stdout=bo,
+                               cwd=os.getcwd())
+                bo.close()
+
+                so = open(solnOutput, 'w')
+                subprocess.run(['./main'],
+                               stdin=go,
+                               stdout=so,
+                               cwd=os.getcwd())
+                so.close()
+                go.close()
+
+                bo = open(bruteOutput, 'r')
+                bos = bo.readlines()
+                so = open(solnOutput, 'r')
+                sos = so.readlines()
+                go = open(genOutput, 'r')
+                gos = go.readlines()
+
+                bo.close()
+                so.close()
+                go.close()
+
+                areEq = bos == sos
+                OKGREEN = '\033[92m'
+                FAIL = '\033[91m'
+                ENDC = '\033[0m'
+
+                if areEq:
+                    _write(f'CASE #{n}: ')
+                    _write(f'{OKGREEN}PASSED{ENDC}')
+                    endl()
+                else:
+                    _write(f'CASE #{n}: ')
+                    _write(f'{FAIL}FAILED{ENDC}')
+                    endl()
+                    _write('INPUT: ')
+                    endl()
+                    endl()
+                    _write(''.join(gos))
+                    endl()
+                    endl()
+                    _write('EXPECTED OUTPUT: ')
+                    endl()
+                    endl()
+                    _write(''.join(bos))
+                    endl()
+                    endl()
+                    _write('SOLUTION OUTPUT: ')
+                    endl()
+                    endl()
+                    _write(''.join(sos))
+                    endl()
+                    break
+            except KeyboardInterrupt():
+                exit(0)
 
 
 if __name__ == "__main__":
-    fire.Fire(Generator)
+    fire.Fire(Tester)
