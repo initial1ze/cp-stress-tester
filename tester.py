@@ -190,6 +190,7 @@ helper = Helper()
 class Tester:
     '''Main testing class.'''
     def generate(self,
+                 cases: int = 10,
                  low: int = 1,
                  high: int = 10,
                  size: Optional[int] = None,
@@ -208,6 +209,8 @@ class Tester:
 
          Parameters
         -----------
+            cases: int, optional
+                Number of testcases to generate.
             low: int, optional
                 Lower bound of the numbers that are generated randomly.
             high: int, optional
@@ -236,7 +239,6 @@ class Tester:
                 Outputs the length of the object along with the testcases, when this flag is passed.
         '''
 
-        cases = 1
         if integers is True:
             if unique is True:
                 lst = helper._uniqueIntegers(cases, low, high)
@@ -317,7 +319,7 @@ class Tester:
         '''
 
         args: List[str] = [
-            f'--size={size}', f'--low={low}', f'--high={high}',
+            '--cases=1', f'--size={size}', f'--low={low}', f'--high={high}',
             f'--integers={integers}', f'--strings={strings}', f'--loi={loi}',
             f'--los={los}', f'--upper={upper}', f'--lower={lower}',
             f'--mixed={mixed}', f'--binary={binary}', f'--unique={unique}',
