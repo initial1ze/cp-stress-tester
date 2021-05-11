@@ -236,9 +236,6 @@ class Tester:
                 Outputs the length of the object along with the testcases, when this flag is passed.
         '''
 
-        # if size is None:
-        #     size = high
-
         cases = 1
         if integers is True:
             if unique is True:
@@ -250,20 +247,7 @@ class Tester:
         elif strings is True:
             lst = helper._strings(cases, low, high, upper, lower, mixed,
                                   binary, size)
-            if len(lst[0]) == 0:
-                stderr.write('''
-ERROR: No string arguments passed.
-
-Please use any of the following flags while using string generation:
---uppper
---lower
---mixed
---binary
-
-For more information use python3 gen.py generate --help command.
-''')
-            else:
-                printSin(cases, lst, printLen)
+            printSin(cases, lst, printLen)
         elif loi is True:
             if unique is True:
                 lst = helper._listOfUniqueIntegers(cases, low, high, size)
@@ -274,23 +258,9 @@ For more information use python3 gen.py generate --help command.
         elif los is True:
             lst = helper._listOfStrings(cases, low, high, upper, lower, mixed,
                                         binary, size)
-            if len(lst[0]) == 0:
-                stderr.write(f'''
-ERROR: No string arguments passed.
-
-Please use any of the following flags while using string generation:
---uppper
---lower
---mixed
---binary
-
-For more information use python3 {os.path.basename(__name__)} generate --help command.
-''')
-            else:
-                printList(cases, lst, printLen)
+            printList(cases, lst, printLen)
 
     def test(self,
-             cases: int = 10,
              low: int = 1,
              high: int = 10,
              size: Optional[int] = None,
@@ -307,9 +277,44 @@ For more information use python3 {os.path.basename(__name__)} generate --help co
              brute: str = 'brute.cpp',
              soln: str = 'main.cpp',
              genOutput: str = 'stressInput') -> None:
+        '''
+        Randomly generate test cases and test them against your solution.
 
-        # if size is None:
-        # size = high
+         Parameters
+        -----------
+            low: int, optional
+                Lower bound of the numbers that are generated randomly.
+            high: int, optional
+                Upper bound of the numbers that are generated randomly.
+            size: int, optional
+                Size of the list/string generated.
+            integers: bool, optional
+                Outputs randomly generated integers when this flag is passed.
+            strings: bool, optional
+                Outputs randomly generated strings when this flag is passed.
+            loi: bool, optional
+                Outputs randomly generated list of integers when this flag is passed.
+            los: bool, optional
+                Outputs randomly generated list of strings when this flag is passed.
+            upper: bool, optional
+                It is used with strings generation when this flag is passed the output will be all uppercase.
+            lower: bool, optional
+                It is used with strings generation when this flag is passed the output will be all lowercase.
+            mixed: bool, optional
+                It is used with strings generation when this flag is passed the output will be all mixed with both uppercase and lowercase.
+            binary: bool, optional
+                It is used with strings generation when this flag is passed the output will be randomly generated binary strings.
+            unique: bool, optional
+                It is used with integers generation to output unique integers without repetition.
+            printLen: bool, optional
+                Outputs the length of the object along with the testcases, when this flag is passed.
+            brute: str, optional
+                Filename of the your correct brutefore solution.
+            soln: str, optional
+                Filename of the your solution.
+            genOutput: str, optional
+                Name of the file in which the output of the generator is written.
+        '''
 
         args: List[str] = [
             f'--size={size}', f'--low={low}', f'--high={high}',
