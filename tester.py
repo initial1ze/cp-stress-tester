@@ -6,7 +6,7 @@ import fire
 import os
 import subprocess
 from sys import stderr, stdout
-from typing import List, Union, Any, Set
+from typing import List, Union, Any, Set, Optional
 
 
 def _write(obj: Union[int, str]):
@@ -89,11 +89,16 @@ class Helper:
         return list(se)
 
     def _strings(self, amount: int, low: int, high: int, upper: bool,
-                 lower: bool, mixed: bool, binary: bool) -> List[str]:
+                 lower: bool, mixed: bool, binary: bool,
+                 size: Optional[None]) -> List[str]:
         a: List[str] = []
 
         for _ in range(amount):
             n = self._randomInt(low, high)
+
+            if size is not None:
+                n = size
+
             s = []
             for _ in range(n):
                 char = ""
@@ -114,11 +119,13 @@ class Helper:
 
         return a
 
-    def _listOfIntegers(self, amount: int, low: int,
-                        high: int) -> List[List[int]]:
+    def _listOfIntegers(self, amount: int, low: int, high: int,
+                        size: Optional[int]) -> List[List[int]]:
         a: List[List[int]] = []
         for _ in range(amount):
-            n: int = self._randomInt(low, high)
+            n = self._randomInt(low, high)
+            if size is not None:
+                n = size
             b: List[int] = []
             for _ in range(n):
                 b.append(self._randomInt(low, high))
@@ -126,27 +133,33 @@ class Helper:
 
         return a
 
-    def _listOfUniqueIntegers(self, amount: int, low: int,
-                              high: int) -> List[List[int]]:
+    def _listOfUniqueIntegers(self, amount: int, low: int, high: int,
+                              size: Optional[int]) -> List[List[int]]:
         a: List[List[int]] = []
         for _ in range(amount):
-            n: int = self._randomInt(low, high)
+            n = self._randomInt(low, high)
+
+            if size is not None:
+                n = size
+
             b: Set[int] = set()
-            for _ in range(n):
+            while len(b) < n:
                 b.add(self._randomInt(low, high))
             a.append(list(b))
 
         return a
 
     def _listOfStrings(self, amount: int, low: int, high: int, upper: bool,
-                       lower: bool, mixed: bool,
-                       binary: bool) -> List[List[str]]:
+                       lower: bool, mixed: bool, binary: bool,
+                       size: Optional[int]) -> List[List[str]]:
         a = []
         for _ in range(amount):
             n = self._randomInt(low, high)
             b = []
             for _ in range(n):
                 length = self._randomInt(low, high)
+                if size is not None:
+                    length = size
                 s = []
                 for _ in range(length):
                     char = ""
@@ -179,6 +192,7 @@ class Tester:
     def generate(self,
                  low: int = 1,
                  high: int = 10,
+                 size: Optional[int] = None,
                  integers: bool = False,
                  strings: bool = False,
                  loi: bool = False,
@@ -195,9 +209,11 @@ class Tester:
          Parameters
         -----------
             low: int, optional
-                Lowest limit of the numbers that are generated randomly.
+                Lower bound of the numbers that are generated randomly.
             high: int, optional
-                Lowest limit of the numbers that are generated randomly.
+                Upper bound of the numbers that are generated randomly.
+            size: int, optional
+                Size of the list/string generated.
             integers: bool, optional
                 Outputs randomly generated integers when this flag is passed.
             strings: bool, optional
@@ -219,6 +235,10 @@ class Tester:
             printLen: bool, optional
                 Outputs the length of the object along with the testcases, when this flag is passed.
         '''
+
+        # if size is None:
+        #     size = high
+
         cases = 1
         if integers is True:
             if unique is True:
@@ -229,7 +249,7 @@ class Tester:
                 printSin(cases, lst, printLen)
         elif strings is True:
             lst = helper._strings(cases, low, high, upper, lower, mixed,
-                                  binary)
+                                  binary, size)
             if len(lst[0]) == 0:
                 stderr.write('''
 ERROR: No string arguments passed.
@@ -246,14 +266,14 @@ For more information use python3 gen.py generate --help command.
                 printSin(cases, lst, printLen)
         elif loi is True:
             if unique is True:
-                lst = helper._listOfUniqueIntegers(cases, low, high)
+                lst = helper._listOfUniqueIntegers(cases, low, high, size)
                 printList(cases, lst, printLen)
             else:
-                lst = helper._listOfIntegers(cases, low, high)
+                lst = helper._listOfIntegers(cases, low, high, size)
                 printList(cases, lst, printLen)
         elif los is True:
             lst = helper._listOfStrings(cases, low, high, upper, lower, mixed,
-                                        binary)
+                                        binary, size)
             if len(lst[0]) == 0:
                 stderr.write(f'''
 ERROR: No string arguments passed.
@@ -273,6 +293,7 @@ For more information use python3 {os.path.basename(__name__)} generate --help co
              cases: int = 10,
              low: int = 1,
              high: int = 10,
+             size: Optional[int] = None,
              integers: bool = False,
              strings: bool = False,
              loi: bool = False,
@@ -287,11 +308,14 @@ For more information use python3 {os.path.basename(__name__)} generate --help co
              soln: str = 'main.cpp',
              genOutput: str = 'stressInput') -> None:
 
+        # if size is None:
+        # size = high
+
         args: List[str] = [
-            f'--low={low}', f'--high={high}', f'--integers={integers}',
-            f'--strings={strings}', f'--loi={loi}', f'--los={los}',
-            f'--upper={upper}', f'--lower={lower}', f'--mixed={mixed}',
-            f'--binary={binary}', f'--unique={unique}',
+            f'--size={size}', f'--low={low}', f'--high={high}',
+            f'--integers={integers}', f'--strings={strings}', f'--loi={loi}',
+            f'--los={los}', f'--upper={upper}', f'--lower={lower}',
+            f'--mixed={mixed}', f'--binary={binary}', f'--unique={unique}',
             f'--printLen={printLen}'
         ]
 
