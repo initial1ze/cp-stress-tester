@@ -1,6 +1,6 @@
 # Stress testing for coding problems.
 
-# Usage:
+## Usage:
 
 There are two options available:
 
