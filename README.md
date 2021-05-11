@@ -1,8 +1,6 @@
-# CP Stress Tester
-
 Stress testing for coding problems.
 
-# HOW TO USE:
+# Usage:
 
 There are two options available:
 
