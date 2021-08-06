@@ -1,8 +1,10 @@
 # TODO: FIX SOME BUGS WITH FLAGS
-
 import random
 import itertools
-import fire
+try:
+    import fire
+except KeyboardInterrupt:
+    exit(0)
 import os
 import subprocess
 from sys import stderr, stdout
@@ -26,8 +28,7 @@ def animate(done: bool, filename: str) -> None:
     stdout.write('\rDone!     ')
 
 
-def printSin(cases: int, lst: Union[List[int], List[str]],
-             printLen: bool) -> None:
+def printSin(cases: int, lst, printLen: bool) -> None:
     _write(cases)
     endl()
     flag = False
@@ -81,7 +82,6 @@ class Helper:
 
     def _uniqueIntegers(self, amount: int, low: int, high: int) -> List[int]:
         se: Set[int] = set()
-        a: List[int] = []
 
         while len(se) < amount:
             se.add(self._randomInt(low, high))
@@ -90,7 +90,7 @@ class Helper:
 
     def _strings(self, amount: int, low: int, high: int, upper: bool,
                  lower: bool, mixed: bool, binary: bool,
-                 size: Optional[None]) -> List[str]:
+                 size: Optional[int]) -> List[str]:
         a: List[str] = []
 
         for _ in range(amount):
@@ -391,19 +391,22 @@ For more information use python3 {os.path.basename(__name__)} generate --help co
                 subprocess.run(args=cmd, cwd=os.getcwd(), stdout=f)
                 f.close()
 
-                bo = open(bruteOutput, 'w')
                 go = open(genOutput, 'r')
-                subprocess.run(['./brute'],
-                               stdin=go,
-                               stdout=bo,
-                               cwd=os.getcwd())
-                bo.close()
-
                 so = open(solnOutput, 'w')
                 subprocess.run(['./main'],
                                stdin=go,
                                stdout=so,
                                cwd=os.getcwd())
+                go.close()
+
+                go = open(genOutput, 'r')
+                bo = open(bruteOutput, 'w')
+                subprocess.run(['./brute'],
+                               stdin=go,
+                               stdout=bo,
+                               cwd=os.getcwd())
+
+                bo.close()
                 so.close()
                 go.close()
 
@@ -420,36 +423,44 @@ For more information use python3 {os.path.basename(__name__)} generate --help co
 
                 areEq = bos == sos
                 OKGREEN = '\033[92m'
+                CYAN = '\033[96m'
+                BLUE = '\033[94m'
                 FAIL = '\033[91m'
                 ENDC = '\033[0m'
 
                 if areEq:
+                    endl()
                     _write(f'CASE #{n}: ')
                     _write(f'{OKGREEN}PASSED{ENDC}')
                     endl()
+                    n += 1
                 else:
-                    _write(f'CASE #{n}: ')
+                    endl()
+                    _write(f'{BLUE}CASE #{n}: {ENDC}')
                     _write(f'{FAIL}FAILED{ENDC}')
                     endl()
-                    _write('INPUT: ')
                     endl()
+                    _write(f'{CYAN}INPUT: {ENDC}')
                     endl()
                     _write(''.join(gos))
                     endl()
                     endl()
-                    _write('EXPECTED OUTPUT: ')
-                    endl()
+                    _write(f'{CYAN}EXPECTED OUTPUT: {ENDC}')
                     endl()
                     _write(''.join(bos))
                     endl()
                     endl()
-                    _write('SOLUTION OUTPUT: ')
-                    endl()
+                    _write(f'{CYAN}SOLUTION OUTPUT: {ENDC}')
                     endl()
                     _write(''.join(sos))
                     endl()
                     break
-            except KeyboardInterrupt():
+
+            except KeyboardInterrupt:
+                subprocess.run([
+                    'rm', 'error', genOutput, solnOutput, bruteOutput, 'brute',
+                    'main'
+                ])
                 exit(0)
 
 

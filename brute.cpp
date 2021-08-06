@@ -83,7 +83,11 @@ template <class T, class V> void _print(map<T, V> v) {
 int n, m, l, k, p, q, r, s, x, y, z, a, b, c, d;
 int sum = 0, ans = 0, total = 0;
 
-void solve() {}
+void solve() {
+  int n;
+  cin >> n;
+  cout << n;
+}
 
 signed main() {
 
