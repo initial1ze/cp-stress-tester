@@ -83,7 +83,9 @@ template <class T, class V> void _print(map<T, V> v) {
 void solve() {
   int n;
   cin >> n;
-  cout << n + 1;
+  int arr[n];
+  rep(i, 0, n) cin >> arr[i];
+  rep(i, 0, n) cout << arr[i];
 }
 
 signed main() {

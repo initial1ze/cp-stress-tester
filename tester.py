@@ -1,12 +1,12 @@
 # TODO: FIX SOME BUGS WITH FLAGS
 import random
 import itertools
+import subprocess
 try:
     import fire
 except KeyboardInterrupt:
     exit(0)
 import os
-import subprocess
 from sys import stderr, stdout
 from typing import List, Union, Any, Set, Optional
 
